@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Dynago">
+<rect width="512" height="512" rx="112" fill="#1A1D21"/>
+<g transform="translate(102 83) scale(5.4)"><path fill="#FF3B47" d="M-1 54 H4.4 L9.7 25 H4.3 Z"/>
+<path fill="#3D8BFF" d="M8 54 H17 L25 10 H16 Z"/>
+<path fill="#AEB4BD" fill-rule="evenodd" d="M28 10 H36 A22 22 0 0 1 36 54 H20 L21.8 44 H35 A12 12 0 0 0 35 20 H26.2 Z"/></g>
+</svg>
