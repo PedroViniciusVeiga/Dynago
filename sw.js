@@ -2,7 +2,7 @@
 // Arquivos do app: busca a versão mais nova quando há internet e usa a cópia salva offline.
 // Biblioteca do Supabase (CDN com versão fixa): usa a cópia salva quando existir.
 // Chamadas ao Supabase (login e dados) nunca passam pelo cache.
-const CACHE = 'dynago-v1';
+const CACHE = 'dynago-v2';
 const FILES = ['./', './index.html', './config.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 const CDN = 'https://cdn.jsdelivr.net/';
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
