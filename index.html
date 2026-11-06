@@ -127,7 +127,7 @@ function rp(v){v=String(v).trim();return /^f|falha/i.test(v)?'F':/\d\s*[-–]\s*
 function E(n){return{n:n,s:P2(PRESC[n]||DEF)}}
 function W(d,n,t,ex,warn){return{id:'b'+d,days:[d],n:n,t:t,warn:warn||'',ex:ex.map(function(x){return E(x)})}}
 var BASE=null;
-function base(){if(!BASE){BASE=parseDy(MY_TXT).L;BASE.forEach(function(w,i){w.id='b'+(w.days.length?w.days[0]:'x'+i)})}return base()}
+function base(){if(!BASE){BASE=parseDy(MY_TXT).L;BASE.forEach(function(w,i){w.id='b'+(w.days.length?w.days[0]:'x'+i)})}return clone(BASE)}
 function ld(k,f){try{var v=localStorage.getItem(ukey(k));return v?JSON.parse(v):f}catch(e){return f}}
 function sv(k,v){try{localStorage.setItem(ukey(k),JSON.stringify(v))}catch(e){}if(DK[k])queueSync()}
 function clone(o){return JSON.parse(JSON.stringify(o))}
@@ -155,7 +155,11 @@ function pres(e){var o=[];e.s.forEach(function(g){var l=o[o.length-1];if(l&&l[0]
 function badge(t){var x=TY[t];return '<span class="badge" style="background:'+x[1]+'22;color:'+x[1]+'">'+x[0]+'</span>'}
 function short(n){var s=String(n).replace(/^treino\s*/i,'').trim();return s.length<=3?s:s.slice(0,3)}
 function $(id){return document.getElementById(id)}
-function last(n,eq){for(var i=hist.length-1;i>=0;i--){var e=hist[i].ex.find(function(x){return x.n==n&&(!eq||!x.eq||x.eq==eq)});if(e){var b=e.sets.filter(function(s){return s[0]=='WS'||s[0]=='TS'}).pop()||e.sets.filter(function(s){return s[0]!='RS'}).pop();if(b)return[b[1],b[2],true]}}if(eq&&eq!='H')for(var j=hist.length-1;j>=0;j--){var f=hist[j].ex&&hist[j].ex.find(function(x){return x.n==n&&x.eq!='H'});if(f){var g=f.sets.filter(function(t){return t[0]=='WS'||t[0]=='TS'}).pop()||f.sets.filter(function(t){return t[0]!='RS'}).pop();if(g)return[g[1],g[2],true]}}return[0,10,false]}
+// Última carga usada no exercício, em qualquer dia ou treino: a sessão mais recente com peso maior que zero.
+// Primeiro procura com o mesmo equipamento; se não houver, aceita qualquer equipamento.
+function lastSet(sets){var v=sets.filter(function(t){return t[0]!='RS'&&+t[1]>0}),w=v.filter(function(t){return t[0]=='WS'||t[0]=='TS'});return w.pop()||v.pop()||null}
+function last(n,eq){var k=lnorm(n).trim();for(var pass=0;pass<2;pass++){for(var i=hist.length-1;i>=0;i--){var h=hist[i];if(!h.ex)continue;
+for(var j=0;j<h.ex.length;j++){var x=h.ex[j];if(lnorm(x.n).trim()!=k)continue;if(pass==0&&eq&&x.eq&&x.eq!=eq)continue;var b=lastSet(x.sets);if(b)return[b[1],b[2],true,h.date]}}}return[0,10,false]}
 
 /* ---------- contas (Supabase) ---------- */
 var CFG=window.DYNAGO_CONFIG||{},SB=null,U=null,AU={m:'login'},SYNC={t:null,st:'ok'},REC=/type=recovery/.test(location.hash||'');
@@ -579,7 +583,7 @@ return '<div class="set cur rest"><div style="display:flex;justify-content:space
 '</div><p class="mu sm" style="text-align:center">Ao zerar, a próxima série aparece sozinha'+notifHint()+'</p>'}
 function act(){var x=S.ex[S.e],n=S.ex.length,ci=x.sets.findIndex(function(t){return !t.done}),ni=nextIdx(),nx=ni>=0?S.ex[ni]:null,tot=0,dd=0;S.ex.forEach(function(e){tot+=e.sets.length;dd+=e.sets.filter(function(t){return t.done}).length});var pc=Math.round(dd/tot*100),s=x.sets[ci],hl=x.eq=='H',left=x.sets.filter(function(t){return !t.done&&t.t!='RS'}).length,rs=s&&s.t=='RS';
 return '<div class="top"><button onclick="quit()" class="sm" style="padding:10px 14px">Sair</button><div class="timer" id="tm">'+fmt(Math.floor((Date.now()-S.t0)/1000))+'</div><button onclick="fin()" style="padding:10px 14px;background:var(--ac);color:var(--ac-tx);font-weight:800">Finalizar</button></div><p class="mu sm">'+esc(S.w.n)+' · Exercício '+(S.e+1)+' de '+n+'</p><div class="bar"><i style="width:'+pc+'%"></i></div><h2 style="font-size:24px;line-height:1.2;margin-bottom:8px">'+esc(x.n)+'</h2>'+(x.o?'<p class="note">'+esc(x.o)+'</p>':'')+
-'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px"><p class="mu sm">'+(x.last[2]?'Última: <b style="color:var(--tx)">'+kg(x.last[0])+' kg × '+x.last[1]+'</b>':'Primeira vez · informe a carga')+'</p><span class="eqt">'+EQN[x.eq||'B']+'</span></div>'+
+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px"><p class="mu sm">'+(x.last[2]?'Última: <b style="color:var(--tx)">'+kg(x.last[0])+' kg × '+x.last[1]+'</b>'+(x.last[3]?' · '+new Date(x.last[3]).getDate()+' '+MS[new Date(x.last[3]).getMonth()]:''):'Primeira vez · informe a carga')+'</p><span class="eqt">'+EQN[x.eq||'B']+'</span></div>'+
 x.sets.map(function(t,i){return t.done&&t.t!='RS'?'<div class="sm dn" onclick="tg('+i+')">✓ '+badge(t.t)+'<span style="flex:1">'+t.r+' reps × '+kg(t.w)+' kg'+(hl?' /halter':'')+'</span><span class="mu">editar</span></div>':''}).join('')+
 (s?(rs?restPanel(x,ci):'<div class="set cur"><div style="display:flex;justify-content:space-between;align-items:center"><span onclick="pk()" style="cursor:pointer">'+badge(s.t)+' <span class="mu sm">alterar</span></span><span class="mu sm">Série '+x.sets.slice(0,ci+1).filter(function(t){return t.t!='RS'}).length+'/'+x.sets.filter(function(t){return t.t!='RS'}).length+' · meta <b style="color:var(--tx)">'+(s.tr=='F'?'falha':s.tr+' reps')+'</b></span></div>'+
 (S.pk?'<div class="hint" style="margin:0">'+KS.map(function(k,j){var c=TY[k][1];return '<button class="badge" onclick="st('+ci+','+j+')" style="background:'+(k==s.t?c:c+'22')+';color:'+(k==s.t?'#15171b':c)+'">'+TY[k][0]+'</button>'}).join('')+'</div>':'')+
